@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="André Kless <andre.kless@web.de> 2021">
+<meta name="license" content="The MIT License (MIT)">
+<title>[EILD] Import of LEA Export</title>
+<style>html, body, body > *:first-child { height: 100%; } body { margin: 0; }</style>
+<script src="https://ccmjs.github.io/ccm/ccm.js"></script>
+<script>
+  ( async () => {
+
+    const questions = await readQuestions();
+    const users = await readUsers();
+    await readInputs();
+    console.log( 'questions:', questions );
+    console.log( 'users:', users );
+
+    async function readQuestions() {
+      const questions = {};
+      const lines = ( await ccm.load( 'questions.csv' ) ).split( '\n' );
+      lines.shift();
+      while ( lines.length ) {
+        const line = lines.shift().split( ';' );
+        questions[ toKey( line[ 0 ] ) ] = {
+          key: toKey( line[ 0 ] ),
+          title: line[ 0 ],
+          solution: line.slice( 6 ).map( solution => !!parseInt( solution ) ),
+          users: {},
+          correct: 0,
+          total: 0
+        };
+      }
+      return questions;
+    }
+
+    async function readUsers() {
+
+      const users = {};
+      const lines = ( await ccm.load( 'users.csv' ) ).split( '\n' );
+      for ( let i = 2; i < lines.length; i += 2 ) {
+        const line = lines[ i ].split( ';' );
+        users[ line[ 1 ] ] = {
+          key: line[ 1 ],
+          name: line[ 0 ],
+          sections: [],
+          correct: 0,
+          total: 0,
+          created_at: line[ 10 ],
+          updated_at: line[ 11 ]
+        };
+      }
+      return users;
+
+    }
+
+    async function readInputs() {
+
+      const keys = Object.keys( users );
+      const lines = ( await ccm.load( 'inputs.csv' ) ).split( '\n' );
+      let i = 0;
+      while ( lines.length && lines[ 0 ].startsWith( 'Ergebnisse' ) ) {
+        readUser();
+        i++;
+      }
+
+      function readUser() {
+        lines.shift();
+        lines.shift();
+        while ( lines.length && !lines[ 0 ].startsWith( 'Ergebnisse' ) )
+          readQuestion();
+      }
+
+      function readQuestion() {
+        const title = lines.shift().split( ';' )[ 1 ];
+        const question = questions[ toKey( title ) ];
+        const user = users[ keys[ i ] ];
+        const section = {
+          key: question.key,
+          title: question.title,
+          part: [],
+          input: [],
+          solution: ccm.helper.clone( question.solution )
+        };
+        while ( lines.length && lines[ 0 ].charCodeAt() !== ';'.charCodeAt() )
+          readAnswer( section );
+        section.correct = JSON.stringify( section.input ) === JSON.stringify( section.solution );
+        section.correct && user.correct++;
+        user.total++;
+        user.sections.push( section );
+        section.correct && question.correct++;
+        question.total++;
+        question.users[ user.key ] = {
+          part: ccm.helper.clone( section.part ),
+          input: ccm.helper.clone( section.input )
+        };
+        lines.length && lines.shift();
+      }
+
+      function readAnswer( section ) {
+        const line = lines.shift().split( ';' );
+        section.part.push( line[ 0 ] );
+        section.input.push( !!parseInt( line[ 1 ] ) );
+      }
+
+    }
+
+    function toKey( string ) {
+      return string.toLowerCase().trim().replace( /\W/g, '' );
+    }
+
+  } )();
+</script>
