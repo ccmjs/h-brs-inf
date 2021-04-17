@@ -4,18 +4,49 @@
 <meta name="author" content="André Kless <andre.kless@web.de> 2021">
 <meta name="license" content="The MIT License (MIT)">
 <title>[EILD] Import of LEA Export</title>
+<link rel="stylesheet" type="text/css" href="https://ccmjs.github.io/akless-components/libs/bootstrap-4/css/bootstrap.min.css">
 <script src="https://ccmjs.github.io/ccm/ccm.js"></script>
-<body>
+<div class="container">
+  <form class="my-3">
+    <div class="form-group">
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="questions-csv">
+        <label class="custom-file-label" for="questions-csv">Wähle CSV-Datei: Fragenpool</label>
+        <small id="questions-help" class="form-text text-muted">Lade hier das CSV von dem als Excel exportiertem Fragenpool hoch, indem die Angaben, welche Antworten zu einer Frage richtig und falsch sind, nachgetragen wurden.</small>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="users-csv">
+        <label class="custom-file-label" for="users-csv">Wähle CSV-Datei: Ergebnisse</label>
+        <small id="users-help" class="form-text text-muted">Lade hier das CSV vom <b>ersten</b> Arbeitsblatt der exportierten Excel-Datei mit den Testergebnissen hoch.</small>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="custom-file">
+        <input type="file" class="custom-file-input" id="inputs-csv">
+        <label class="custom-file-label" for="inputs-csv">Wähle CSV-Datei: Antworten</label>
+        <small id="inputs-help" class="form-text text-muted">Lade hier das CSV vom <b>zweiten</b> Arbeitsblatt der exportierten Excel-Datei mit den Testergebnissen hoch.</small>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Good Luck!</button>
+  </form>
+</div>
+<!--
 <p>Questions: <input id="questions" type="file"></p>
 <p>Users: <input id="users" type="file"></p>
 <p>Inputs: <input id="inputs" type="file"></p>
 <p><button>Good luck!</button></p>
+-->
 <script>
   ( async () => {
 
     run( await loadFiles() );
 
-    document.querySelector( 'button' ).addEventListener( 'click', async () => run( await uploadFiles() ) );
+    document.querySelector( 'button' ).addEventListener( 'click', async event => {
+      event.preventDefault();
+      run( await uploadFiles() )
+    } );
 
     async function uploadFiles() {
       return Promise.all( [ readFile( 'questions' ), readFile( 'users' ), readFile( 'inputs' ) ] );
@@ -25,11 +56,11 @@
       return Promise.all( [ await ccm.load( './files/questions.csv' ), await ccm.load( './files/users.csv' ), await ccm.load( './files/inputs.csv' ) ] );
     }
 
-    function readFile( id ) {
+    function readFile( csv ) {
       return new Promise( resolve => {
         const reader = new FileReader();
         reader.onload = () => resolve( reader.result );
-        reader.readAsText( document.querySelector( '#' + id ).files[ 0 ], 'UTF-8' );
+        reader.readAsText( document.querySelector( '#' + csv + '-csv' ).files[ 0 ], 'UTF-8' );
       } );
     }
 
