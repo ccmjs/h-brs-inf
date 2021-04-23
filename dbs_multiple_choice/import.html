@@ -6,38 +6,24 @@
 <title>[EILD] Import of LEA Export</title>
 <link rel="stylesheet" type="text/css" href="https://ccmjs.github.io/akless-components/libs/bootstrap-4/css/bootstrap.min.css">
 <script src="https://ccmjs.github.io/ccm/ccm.js"></script>
+<body class="bg-dark">
 <div class="container">
   <form class="my-3">
     <div class="form-group">
-      <div class="custom-file">
-        <input type="file" class="custom-file-input" id="questions-csv">
-        <label class="custom-file-label" for="questions-csv">Wähle CSV-Datei: Fragenpool</label>
-        <small id="questions-help" class="form-text text-muted">Lade hier das CSV von dem als Excel exportiertem Fragenpool hoch, indem die Angaben, welche Antworten zu einer Frage richtig und falsch sind, nachgetragen wurden.</small>
-      </div>
+      <input type="file" class="form-control-file" id="questions-csv">
+      <small id="questions-help" class="form-text text-muted">Lade hier das CSV von dem als Excel exportiertem Fragenpool hoch, indem die Angaben, welche Antworten zu einer Frage richtig und falsch sind, nachgetragen wurden.</small>
     </div>
     <div class="form-group">
-      <div class="custom-file">
-        <input type="file" class="custom-file-input" id="users-csv">
-        <label class="custom-file-label" for="users-csv">Wähle CSV-Datei: Ergebnisse</label>
-        <small id="users-help" class="form-text text-muted">Lade hier das CSV vom <b>ersten</b> Arbeitsblatt der exportierten Excel-Datei mit den Testergebnissen hoch.</small>
-      </div>
+      <input type="file" class="form-control-file" id="users-csv">
+      <small id="users-help" class="form-text text-muted">Lade hier das CSV vom <b>ersten</b> Arbeitsblatt der exportierten Excel-Datei mit den Testergebnissen hoch.</small>
     </div>
     <div class="form-group">
-      <div class="custom-file">
-        <input type="file" class="custom-file-input" id="inputs-csv">
-        <label class="custom-file-label" for="inputs-csv">Wähle CSV-Datei: Antworten</label>
-        <small id="inputs-help" class="form-text text-muted">Lade hier das CSV vom <b>zweiten</b> Arbeitsblatt der exportierten Excel-Datei mit den Testergebnissen hoch.</small>
-      </div>
+      <input type="file" class="form-control-file" id="inputs-csv">
+      <small id="inputs-help" class="form-text text-muted">Lade hier das CSV vom <b>zweiten</b> Arbeitsblatt der exportierten Excel-Datei mit den Testergebnissen hoch.</small>
     </div>
     <button type="submit" class="btn btn-primary">Good Luck!</button>
   </form>
 </div>
-<!--
-<p>Questions: <input id="questions" type="file"></p>
-<p>Users: <input id="users" type="file"></p>
-<p>Inputs: <input id="inputs" type="file"></p>
-<p><button>Good luck!</button></p>
--->
 <script>
   ( async () => {
 
@@ -70,6 +56,7 @@
       readInputs();
       console.log( 'questions:', questions );
       console.log( 'users:', users );
+      console.log( JSON.stringify( { questions: questions, users: users } ) );
 
       function readQuestions() {
         const questions = {};
@@ -146,9 +133,20 @@
           section.correct && question.correct++;
           question.total++;
           question.users[ user.key ] = {
+            key: user.key,
+            name: user.name,
             part: ccm.helper.clone( section.part ),
             input: ccm.helper.clone( section.input )
           };
+          if ( !question.answers ) question.answers = section.part.map( ( text, i ) => {
+            return {
+              key: toKey( text ),
+              text: text,
+              correct: question.solution[ i ],
+              users: [ [], [] ]
+            };
+          } );
+          question.answers.forEach( ( answer, i ) => answer.users[ section.input[ i ] === question.solution[ i ] ? 1 : 0 ].push( user.key ) );
           lines.length && lines.shift();
         }
 
