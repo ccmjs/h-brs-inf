@@ -3,7 +3,140 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="author" content="André Kless <andre.kless@web.de> 2021">
 <meta name="license" content="The MIT License (MIT)">
-
-<style>html, body { margin: 0; }</style>
+<title>[EILD] Import of LEA Export</title>
+<link rel="stylesheet" type="text/css" href="https://ccmjs.github.io/akless-components/libs/bootstrap-4/css/bootstrap.min.css">
 <script src="https://ccmjs.github.io/h-brs-inf/mc_analytics/versions/ccm.mc_analytics-1.0.0.js"></script>
-<ccm-mc_analytics-1-0-0 key='["ccm.get","https://ccmjs.github.io/h-brs-inf/mc_analytics/resources/resources.js","demo"]'></ccm-mc_analytics-1-0-0>
+<body>
+<div class="container">
+  <form class="my-3">
+    <div class="form-group">
+      <input type="file" class="form-control-file" id="questions-csv">
+      <small id="questions-help" class="form-text text-muted">Lade hier das CSV von dem als Excel exportiertem Fragenpool hoch, indem die Angaben, welche Antworten zu einer Frage richtig und falsch sind, nachgetragen wurden.</small>
+    </div>
+    <div class="form-group">
+      <input type="file" class="form-control-file" id="users-csv">
+      <small id="users-help" class="form-text text-muted">Lade hier das CSV vom <b>ersten</b> Arbeitsblatt der exportierten Excel-Datei mit den Testergebnissen hoch.</small>
+    </div>
+    <div class="form-group">
+      <input type="file" class="form-control-file" id="inputs-csv">
+      <small id="inputs-help" class="form-text text-muted">Lade hier das CSV vom <b>zweiten</b> Arbeitsblatt der exportierten Excel-Datei mit den Testergebnissen hoch.</small>
+    </div>
+    <button type="submit" class="btn btn-primary">Good Luck!</button>
+  </form>
+</div>
+<script>
+  ( async () => {
+
+    document.querySelector( 'button' ).addEventListener( 'click', async event => {
+      event.preventDefault();
+      run( await uploadFiles() )
+    } );
+
+    async function uploadFiles() {
+      return Promise.all( [ readFile( 'questions' ), readFile( 'users' ), readFile( 'inputs' ) ] );
+    }
+
+    function readFile( csv ) {
+      return new Promise( resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve( reader.result );
+        reader.readAsText( document.querySelector( '#' + csv + '-csv' ).files[ 0 ], 'UTF-8' );
+      } );
+    }
+
+    function run( files ) {
+      const questions = readQuestions();
+      const users = readUsers();
+      readInputs();
+      console.log( 'questions:', questions );
+      console.log( 'users:', users );
+      console.log( JSON.stringify( users ) );
+      renderAnalytics( users );
+
+      function readQuestions() {
+        const questions = {};
+        const lines = files[ 0 ].split( '\n' );
+        lines.shift();
+        while ( lines.length ) {
+          const line = lines.shift().split( ';' );
+          questions[ toKey( line[ 0 ] ) ] = {
+            key: toKey( line[ 0 ] ),
+            title: line[ 0 ],
+            solution: line.slice( 6 ).map( solution => !!parseInt( solution ) )
+          };
+        }
+        return questions;
+      }
+
+      function readUsers() {
+        const users = {};
+        const lines = files[ 1 ].split( '\n' );
+        for ( let i = 2; i < lines.length; i += 2 ) {
+          const line = lines[ i ].split( ';' );
+          users[ line[ 1 ] ] = {
+            key: line[ 1 ],
+            name: line[ 0 ],
+            sections: [],
+            created_at: line[ 10 ],
+            updated_at: line[ 11 ]
+          };
+        }
+        return users;
+      }
+
+      function readInputs() {
+
+        const keys = Object.keys( users );
+        const lines = files[ 2 ].split( '\n' );
+        let i = 0;
+        while ( lines.length && lines[ 0 ].startsWith( 'Ergebnisse' ) ) {
+          readUser();
+          i++;
+        }
+
+        function readUser() {
+          lines.shift();
+          lines.shift();
+          while ( lines.length && !lines[ 0 ].startsWith( 'Ergebnisse' ) )
+            readQuestion();
+        }
+
+        function readQuestion() {
+          const title = lines.shift().split( ';' )[ 1 ];
+          const question = questions[ toKey( title ) ];
+          const user = users[ keys[ i ] ];
+          const section = {
+            key: question.key,
+            title: question.title,
+            parts: []
+          };
+          while ( lines.length && lines[ 0 ].charCodeAt() !== ';'.charCodeAt() )
+            readAnswer( section );
+          question.solution.forEach( ( solution, i ) => section.parts[ i ].solution = solution );
+          user.sections.push( section );
+          lines.length && lines.shift();
+        }
+
+        function readAnswer( section ) {
+          const line = lines.shift().split( ';' );
+          section.parts.push( {
+            key: toKey( line[ 0 ] ),
+            text: line[ 0 ],
+            input: !!parseInt( line[ 1 ] )
+          } );
+        }
+
+      }
+
+      function toKey( string ) {
+        return string.toLowerCase().trim().replace( /\W/g, '' );
+      }
+
+    }
+
+    function renderAnalytics() {
+      document.body.innerHTML = `<ccm-mc_analytics data='["ccm.load","./resources/results.json"]'></ccm-mc_analytics>`;
+    }
+
+  } )();
+</script>

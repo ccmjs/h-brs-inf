@@ -11,7 +11,6 @@
 
   const component = {
     name: 'mc_analytics',
-    version: [ 1, 0, 0 ],
     ccm: 'https://ccmjs.github.io/ccm/versions/ccm-26.3.0.js',
     config: {
       "chart": [ "ccm.component", "https://ccmjs.github.io/akless-components/highchart/versions/ccm.highchart-3.0.3.js" ],
@@ -21,9 +20,9 @@
           "https://ccmjs.github.io/h-brs-inf/mc_analytics/resources/styles.css"
         ]
       ],
-      "data": [ "ccm.load", "./../dbs_multiple_choice/files/data.json" ],
+      "data": {},
       "helper": [ "ccm.load", "https://ccmjs.github.io/akless-components/modules/versions/helper-7.2.0.mjs" ],
-      "html": [ "ccm.load", "https://ccmjs.github.io/akless-components/team_project_analytics/resources/templates.mjs" ],
+      "html": [ "ccm.load", "https://ccmjs.github.io/h-brs-inf/mc_analytics/resources/templates.mjs" ],
       "modal": [ "ccm.start", "https://ccmjs.github.io/tkless-components/modal/versions/ccm.modal-3.0.0.js", {
         "backdrop_close": true,
         "buttons": null,
