@@ -53,8 +53,6 @@
 
         // get question-focused data
         questions = toQuestions( dataset );
-        console.log( 'user-focused:', dataset );
-        console.log( 'question-focused:', questions );
 
         // render analytics data
         this.html.render( this.html.table( questions ), this.element.querySelector( '#data' ) );
