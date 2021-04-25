@@ -6,7 +6,7 @@
 <title>[EILD] Import of LEA Export</title>
 <link rel="stylesheet" type="text/css" href="https://ccmjs.github.io/akless-components/libs/bootstrap-4/css/bootstrap.min.css">
 <script src="https://ccmjs.github.io/ccm/ccm.js"></script>
-<body class="bg-dark">
+<body>
 <div class="container">
   <form class="my-3">
     <div class="form-group">
@@ -56,7 +56,7 @@
       readInputs();
       console.log( 'questions:', questions );
       console.log( 'users:', users );
-      console.log( JSON.stringify( { questions: questions, users: users } ) );
+      console.log( JSON.stringify( users ) );
 
       function readQuestions() {
         const questions = {};
@@ -67,17 +67,13 @@
           questions[ toKey( line[ 0 ] ) ] = {
             key: toKey( line[ 0 ] ),
             title: line[ 0 ],
-            solution: line.slice( 6 ).map( solution => !!parseInt( solution ) ),
-            users: {},
-            correct: 0,
-            total: 0
+            solution: line.slice( 6 ).map( solution => !!parseInt( solution ) )
           };
         }
         return questions;
       }
 
       function readUsers() {
-
         const users = {};
         const lines = files[ 1 ].split( '\n' );
         for ( let i = 2; i < lines.length; i += 2 ) {
@@ -86,14 +82,11 @@
             key: line[ 1 ],
             name: line[ 0 ],
             sections: [],
-            correct: 0,
-            total: 0,
             created_at: line[ 10 ],
             updated_at: line[ 11 ]
           };
         }
         return users;
-
       }
 
       function readInputs() {
@@ -120,41 +113,24 @@
           const section = {
             key: question.key,
             title: question.title,
-            part: [],
-            input: [],
-            solution: ccm.helper.clone( question.solution )
+            parts: []
           };
           while ( lines.length && lines[ 0 ].charCodeAt() !== ';'.charCodeAt() )
             readAnswer( section );
-          section.correct = JSON.stringify( section.input ) === JSON.stringify( section.solution );
-          section.correct && user.correct++;
-          user.total++;
+          question.solution.forEach( ( solution, i ) => section.parts[ i ].solution = solution );
           user.sections.push( section );
-          section.correct && question.correct++;
-          question.total++;
-          question.users[ user.key ] = {
-            key: user.key,
-            name: user.name,
-            part: ccm.helper.clone( section.part ),
-            input: ccm.helper.clone( section.input )
-          };
-          if ( !question.answers ) question.answers = section.part.map( ( text, i ) => {
-            return {
-              key: toKey( text ),
-              text: text,
-              correct: question.solution[ i ],
-              users: [ [], [] ]
-            };
-          } );
-          question.answers.forEach( ( answer, i ) => answer.users[ section.input[ i ] === question.solution[ i ] ? 1 : 0 ].push( user.key ) );
           lines.length && lines.shift();
         }
 
         function readAnswer( section ) {
           const line = lines.shift().split( ';' );
-          section.part.push( line[ 0 ] );
-          section.input.push( !!parseInt( line[ 1 ] ) );
+          section.parts.push( {
+            key: toKey( line[ 0 ] ),
+            text: line[ 0 ],
+            input: !!parseInt( line[ 1 ] )
+          } );
         }
+
       }
 
       function toKey( string ) {
