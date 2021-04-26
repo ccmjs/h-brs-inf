@@ -8,7 +8,7 @@ ccm.files[ 'resources.js' ] = {
 
   "local": {
     "css.1.1": "./../mc_analytics/resources/styles.css",
-    "data": [ "ccm.load", "./../mc_analytics/resources/results.json" ],
+    "data": [ "ccm.load", "./../mc_analytics/results.json" ],
     "html.1": "./../mc_analytics/resources/templates.mjs"
   },
 

@@ -8,9 +8,6 @@
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: white;
   height: 100%;
-  /*
-  filter: invert(100%);
-   */
 }
 
 #refresh {
@@ -52,6 +49,12 @@ th > span, td > span {
   margin: 0 !important;
 }
 
+.sum {
+  font-size: large;
+  padding-bottom: 2px;
+}
+
 .average {
   font-size: x-large;
+  padding-bottom: 1px;
 }
