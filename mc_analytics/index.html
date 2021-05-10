@@ -137,7 +137,7 @@
               title: question.title,
               parts: []
             };
-            while ( lines.length && lines[ 0 ].charCodeAt() !== ';'.charCodeAt() )
+            while ( lines.length && lines[ 0 ] && lines[ 0 ].charCodeAt() !== ';'.charCodeAt() )
               readAnswer( section );
             question.solution.forEach( ( solution, i ) => section.parts[ i ].solution = solution );
             user.sections.push( section );
