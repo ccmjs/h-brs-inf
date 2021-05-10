@@ -72,7 +72,12 @@
           const lines = files[ 0 ].split( '\n' );
           lines.shift();
           while ( lines.length ) {
-            const line = lines.shift().split( ';' );
+            let line = lines.shift().split( ';' );
+            if ( line.length !== 11 ) {
+              console.log( 'Wrong number of cells:', line );
+              line = [ line.slice( 0, line.length - 10 ).join( ';' ) ].concat( line.slice( line.length - 10 ) );
+              console.log( 'Fixed: ', line );
+            }
             questions[ toKey( line[ 0 ] ) ] = {
               key: toKey( line[ 0 ] ),
               title: line[ 0 ],
@@ -87,6 +92,8 @@
           const lines = files[ 1 ].split( '\n' );
           for ( let i = 2; i < lines.length; i += 2 ) {
             const line = lines[ i ].split( ';' );
+            if ( line.length !== 19 )
+              console.log( 'Wrong number of cells:', line );
             users[ line[ 1 ] ] = {
               key: line[ 1 ],
               name: line[ 0 ],
@@ -116,7 +123,13 @@
           }
 
           function readQuestion() {
-            const title = lines.shift().split( ';' )[ 1 ];
+            let line = lines.shift().split( ';' );
+            if ( line.length !== 2 ) {
+              console.log( 'Wrong number of cells:', line );
+              line = line[ 0 ].concat( [ line.slice( 1 ).join( ';' ) ] );
+              console.log( 'Fixed: ', line );
+            }
+            const title = line[ 1 ];
             const question = questions[ toKey( title ) ];
             const user = users[ keys[ i ] ];
             const section = {
@@ -132,7 +145,12 @@
           }
 
           function readAnswer( section ) {
-            const line = lines.shift().split( ';' );
+            let line = lines.shift().split( ';' );
+            if ( line.length !== 2 ) {
+              console.log( 'Wrong number of cells:', line );
+              line = [ line.slice( 0, -1 ).join( ';' ) ].concat( line[ line.length - 1 ] );
+              console.log( 'Fixed: ', line );
+            }
             section.parts.push( {
               key: toKey( line[ 0 ] ),
               text: line[ 0 ],
