@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script>
+input = `4_abause2s_jkaupp2s_kvilla2s
+4_adzind2s_kschn22s
+4_aportz2s_jeffen2s_jschip2s
+4_blante2s_jsweti2s_troeni2s
+4_drachn2s_fquack2s_jkoopm2s
+4_fsprin2s_mzaehl2s_tsaur2s
+4_jvaudo2s_pseide2s_tvaudo2s`;
+input = input.split( '\n' );
+input = input.map( entry => {
+  entry = entry.substring( entry.indexOf( '_' ) + 1, entry.lastIndexOf( '2s' ) + 2 );
+  entry = entry.replaceAll( '_', '\n' );
+  return entry;
+} );
+input = input.join( '\n' );
+console.log( input );
+</script>
